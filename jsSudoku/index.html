@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Sudoku</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f7f7f7;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    td {
+      width: 50px;
+      height: 50px;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid black;
+      font-size: 24px;
+      border-right: 2px solid black;
+      border-bottom: 2px solid black;
+      border-left: 2px solid black;
+      border-top: 2px solid black;
+    }
+    /* (вертикальні смуги) */
+    td:nth-child(3n) {
+      border-right: 2px solid black;
+    }
+    td:nth-child(3n+1) {
+      border-left: 2px solid black;
+    }
+    
+    /* (горизонтальні смуги) */
+    tr:nth-child(3n) td {
+      border-bottom: 2px solid black;
+    }
+    tr:nth-child(3n+1) td {
+      border-top: 2px solid black;
+    }
+    
+    input {
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      font-size: 24px;
+      border: none;
+      outline: none;
+    }
+    input:focus {
+      background-color: #eaeaea;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+</style>
+</head>
+<body>
+  <h1>Interactive Sudoku</h1>
+  <table>
+    <tbody id="sudoku-grid"></tbody>
+  </table>
+  <button onclick="checkSolution()">Check Solution</button>
+  <p id="result"></p>
+
+  <script>
+    const gridContainer = document.getElementById('sudoku-grid');
+    function generateGrid() {
+      for (let row = 0; row < 9; row++) {
+        let tr = document.createElement('tr');
+        for (let col = 0; col < 9; col++) {
+          let td = document.createElement('td');
+          let input = document.createElement('input');
+          input.type = 'number';
+          input.min = '1';
+          input.max = '9';
+          input.value = '';
+          td.appendChild(input);
+          tr.appendChild(td);
+        }
+        gridContainer.appendChild(tr);
+      }
+    }
+    generateGrid();
+
+    function checkSolution() {
+      let board = [];
+      for (let row = 0; row < 9; row++) {
+        let rowValues = [];
+        for (let col = 0; col < 9; col++) {
+          let cell = gridContainer.rows[row].cells[col].querySelector('input');
+          let value = parseInt(cell.value) || 0;
+          rowValues.push(value);
+        }
+        board.push(rowValues);
+      }
+      
+      if (validSolution(board)) {
+        document.getElementById('result').textContent = 'Valid solution!';
+        document.getElementById('result').style.color = 'green';
+      } else {
+        document.getElementById('result').textContent = 'Invalid solution!';
+        document.getElementById('result').style.color = 'red';
+      }
+    }
+
+    function validSolution(board) {
+      function isValidGroup(group) {
+        let nums = group.filter(n => n !== 0);
+        return new Set(nums).size === nums.length && nums.length === 9;
+      }
+
+      for (let row = 0; row < 9; row++) {
+        if (!isValidGroup(board[row])) return false;
+      }
+
+      for (let col = 0; col < 9; col++) {
+        let column = board.map(row => row[col]);
+        if (!isValidGroup(column)) return false;
+      }
+
+      for (let blockRow = 0; blockRow < 9; blockRow += 3) {
+        for (let blockCol = 0; blockCol < 9; blockCol += 3) {
+          let block = [];
+          for (let row = blockRow; row < blockRow + 3; row++) {
+            for (let col = blockCol; col < blockCol + 3; col++) {
+              block.push(board[row][col]);
+            }
+          }
+          if (!isValidGroup(block)) return false;
+        }
+      }
+
+      return true;
+    }
+  </script>
+</body>
+</html>
